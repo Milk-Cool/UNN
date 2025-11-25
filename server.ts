@@ -84,8 +84,8 @@ const nextCalculation = async () => {
 };
 await nextCalculation();
 const limiter = rateLimit({
-    windowMs: 60 * 1000,
-    limit: 20,
+    windowMs: 3 * 60 * 1000,
+    limit: 50,
     skip: () => !!process.env.BYPASS_RATE_LIMIT
 });
 app.get("/api/history", async (_req, res) => {
