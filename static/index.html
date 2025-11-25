@@ -14,18 +14,22 @@
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
         <meta name="language" content="English">
         <meta name="author" content="Milk_Cool">
+        <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" defer></script>
+        <link rel="preconnect" href="https://challenges.cloudflare.com">
+        <script>const SITE_KEY = "{{key}}";</script>
     </head>
     <body>
         <div id="main">
             <h1 class="red">UNN</h1>
             <h3 class="red">You're the neural network!</h3>
             <h3><span id="expr"></span> = <input id="res"><button id="submit">OK →</button></h3>
+            <div id="cf"></div>
             <h4>We're <span id="percent"></span>% of the way there! | <a href="https://github.com/Milk-Cool/UNN" target="_blank">GitHub</a></h4>
             <h6>You're calculating the nodes for an image recognition neural network (see <a href="https://en.wikipedia.org/wiki/Mathematics_of_neural_networks_in_machine_learning" target="_blank">Wikipedia</a>).<br>Invalid values are rejected, but all the recognitions below were computed by humans.</h6>
         </div>
         <div id="recent">
             <h3>Recently recognized: <button id="hide">Hide</button></h3>
         </div>
-        <script src="script.js"></script>
+        <script src="script.js" defer></script>
     </body>
 </html>

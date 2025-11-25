@@ -1,4 +1,10 @@
 (async () => {
+    let tok;
+    const widgetID = turnstile.render("#cf", {
+        sitekey: SITE_KEY,
+        callback: newtok => tok = newtok
+    });
+
     let res = await (await fetch("/api/current")).json();
 
     const update = () => {
@@ -12,7 +18,10 @@
         document.querySelector("#submit").disabled = true;
         const f = await fetch("/api/solve", {
             method: "POST",
-            body: "res=" + document.querySelector("#res").value
+            body: new URLSearchParams({
+                "res": document.querySelector("#res").value,
+                tok
+            }).toString()
         });
         document.querySelector("#submit").disabled = false;
         if(f.status !== 200) alert(f.status === 429 ? "Nice try, bot" : (await f.json()).error);

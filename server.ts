@@ -5,6 +5,7 @@ import { Jimp, ResizeStrategy, rgbaToInt } from "jimp";
 import * as db from "./db";
 import { getPixels } from "./training/train";
 import { rateLimit } from "express-rate-limit";
+import "dotenv/config";
 
 
 const PRECISION = 3;
@@ -13,6 +14,9 @@ const MULT = 10 ** PRECISION;
 const MAX_OPERATIONS = 5120;
 
 const app = express();
+app.get("/", (_req, res) => {
+    res.send(fs.readFileSync(join("static", "index.html"), "utf-8").replaceAll("{{key}}", process.env.SITE_KEY as string));
+})
 app.use(express.static("static"));
 app.set("trust proxy", true);
 
@@ -120,7 +124,21 @@ app.get("/api/current", (_req, res) => {
 });
 app.post("/api/solve", limiter, express.urlencoded({ extended: true, type: () => true }), async (req, res) => {
     if(calculation === null) return;
-    if(!req.body.res || Number.isNaN(parseInt(req.body.res))) return res.status(400).send({ error: "Bad request" });
+    if((!req.body.tok && !process.env.BYPASS_RATE_LIMIT) || !req.body.res || Number.isNaN(parseInt(req.body.res))) return res.status(400).send({ error: "Bad request" });
+
+    const r = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+        headers: {
+            "content-type": "application/x-www-form-urlencoded"
+        },
+        body: new URLSearchParams({
+            secret: process.env.SECRET_KEY as string,
+            response: req.body.tok
+        }).toString(),
+        method: "POST"
+    });
+    const j = await r.json();
+    if(!j.success) return res.status(400).send({ error: "Bad captcha" }); 
+
     const expected = b(calculation.op == 0 ? f(calculation.a) * f(calculation.b) : f(calculation.a) + f(calculation.b), calculation.op);
     const actual = b(parseInt(req.body.res), calculation.op);
     if(Math.abs(expected - actual) > 0.0001) return res.status(400).send({ error: "Incorrect value!" });
