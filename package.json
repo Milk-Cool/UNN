@@ -19,6 +19,7 @@
   "type": "module",
   "scripts": {
     "start": "tsx server.ts",
+    "test": "tsx test.ts",
     "train": "tsx training/train.ts --run"
   },
   "devDependencies": {
@@ -29,6 +30,7 @@
   "dependencies": {
     "better-sqlite3": "^12.4.6",
     "express": "^5.1.0",
+    "express-rate-limit": "^8.2.1",
     "jimp": "^1.6.0"
   }
 }

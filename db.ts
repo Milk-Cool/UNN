@@ -33,7 +33,7 @@ export const hasImage = () => {
 }
 export const newImage = (image: number[], correct: number, auto = false) => {
     db.prepare(`INSERT INTO images (data, correct, guess, start, end, auto)
-        VALUES (?, ?, ?, ?, ?, ?)`).run(JSON.stringify(image), correct, -1, Date.now() / 1000, -1, auto ? 1 : 0);
+        VALUES (?, ?, ?, ?, ?, ?)`).run(JSON.stringify(image), correct, -1, Math.floor(Date.now() / 1000), -1, auto ? 1 : 0);
 }
 
 export const calculationsForCur = () => {
@@ -45,4 +45,8 @@ export const calculation = (n: number): { id: number, image: number, n: number, 
 export const pushCalculation = (a: number, b: number, op: 0 | 1, res: number) => {
     db.prepare(`INSERT INTO calculations (image, n, a, b, op, res)
         VALUES (?, ?, ?, ?, ?, ?)`).run(curImageID(), calculationsForCur(), a, b, op, res);
+}
+
+export const solveImage = (guess: number) => {
+    db.prepare(`UPDATE images SET guess = ?, end = ? WHERE guess = -1`).run(guess, Math.floor(Date.now() / 1000));
 }

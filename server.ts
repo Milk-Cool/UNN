@@ -4,10 +4,17 @@ import { join } from "path";
 import { Jimp, ResizeStrategy } from "jimp";
 import * as db from "./db";
 import { getPixels } from "./training/train";
+import { rateLimit } from "express-rate-limit";
 
+
+const PRECISION = 3;
+const MULT = 10 ** PRECISION;
+
+const MAX_OPERATIONS = 5120;
 
 const app = express();
 app.use(express.static("static"));
+app.set("trust proxy", true);
 
 let model: { w: number[][], b: number[] };
 try {
@@ -32,6 +39,7 @@ const newImage = async () => {
     db.newImage(i, n);
     return i;
 }
+await newImage();
 
 type Calculation = { a: number, b: number, op: 0 | 1 }; // op = 0 is multiplication, 1 is addition
 const getCalculation = (x: number): (Calculation | null) => {
@@ -51,13 +59,59 @@ const getCalculation = (x: number): (Calculation | null) => {
     return null;
 };
 
-await newImage();
-let i = 0;
-while(true) {
-    const c = getCalculation(i++);
-    if(c === null) break;
-    const res = c.op == 0 ? c.a * c.b : c.a + c?.b;
-    db.pushCalculation(c.a, c.b, c.op, res);
-}
-for(let i = 0; i < 10; i++)
-    console.log(`${i} - ${db.calculation(256 * 10 + 255 * 10 + i).res}`);
+const f = (x: number) => Math.round(x * MULT);
+const b = (x: number, op: 0 | 1) => op === 0 ? x / (MULT ** 2) : x / MULT;
+
+let calculation: Calculation | null = null;
+const nextCalculation = async () => {
+    while(true) {
+        calculation = getCalculation(db.calculationsForCur());
+        if(calculation === null) {
+            let max = -Infinity, maxi = -1, cur;
+            for(let i = 0; i < 10; i++)
+                if((cur = db.calculation(256 * 10 + 255 * 10 + i).res) > max) {
+                    max = cur;
+                    maxi = i;
+                }
+            db.solveImage(maxi);
+            await newImage();
+            continue;
+        }
+        if(calculation.a != 0 && calculation.b != 0) break;
+        db.pushCalculation(calculation.a, calculation.b, calculation.op,
+            calculation.op == 0 ? calculation.a * calculation.b : calculation.a + calculation.b);
+    }
+};
+await nextCalculation();
+const limiter = rateLimit({
+    windowMs: 60 * 1000,
+    limit: 20,
+    skip: () => !!process.env.BYPASS_RATE_LIMIT
+});
+app.get("/api/history", (_req, res) => {
+    // TODO
+});
+app.get("/api/current", (_req, res) => {
+    if(calculation === null) return;
+    res.send({
+        no: db.calculationsForCur(),
+        a: f(calculation.a),
+        b: f(calculation.b),
+        op: calculation.op === 0 ? "*" : "+",
+        progress: db.calculationsForCur() / MAX_OPERATIONS
+    });
+});
+app.post("/api/solve", limiter, express.urlencoded({ extended: true, type: () => true }), async (req, res) => {
+    if(calculation === null) return;
+    if(!req.body.res) return res.status(400).send({ error: "Bad request" });
+    const expected = b(calculation.op == 0 ? f(calculation.a) * f(calculation.b) : f(calculation.a) + f(calculation.b), calculation.op);
+    const actual = b(parseInt(req.body.res), calculation.op);
+    if(Math.abs(expected - actual) > 0.0001) return res.status(400).send({ error: "Incorrect value!" });
+
+    db.pushCalculation(calculation.a, calculation.b, calculation.op, actual);
+    await nextCalculation();
+
+    res.redirect("/api/current");
+});
+
+app.listen(40067);
