@@ -1,5 +1,5 @@
 (async () => {
-    let res = await (await fetch("http://localhost:40067/api/current")).json();
+    let res = await (await fetch("/api/current")).json();
 
     const update = () => {
         const sign = res.op === "*" ? "×" : "+";
