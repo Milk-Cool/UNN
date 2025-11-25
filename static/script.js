@@ -48,7 +48,7 @@
 
             const t = document.createElement("pre");
             const time = item.end - item.start;
-            t.innerText = `Actual: ${item.correct}\nRecognized: ${item.guess}\nIn: ${Math.floor(time / 3600)}h${Math.floor(time / 60) % 60}m`;
+            t.innerText = `Actual: ${item.correct}\nRecognized: ${item.guess}\nIn: ${Math.floor(time / 3600)}h${Math.floor(time / 60) % 60}m${item.auto ? "\n[Automatic]" : ""}`;
             div.appendChild(t);
 
             document.querySelector("#recent").append(div);

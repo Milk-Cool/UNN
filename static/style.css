@@ -48,6 +48,8 @@ body {
     margin: .5em;
     padding: .5em;
     display: inline-block;
+    min-height: 13.5em;
+    vertical-align: bottom;
 }
 #recent > div > img {
     width: 100%;

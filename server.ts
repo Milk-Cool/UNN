@@ -89,7 +89,7 @@ const limiter = rateLimit({
     skip: () => !!process.env.BYPASS_RATE_LIMIT
 });
 app.get("/api/history", async (_req, res) => {
-    res.send((await Promise.all((db.recent() as { data: string, correct: number, guess: number, start: number, end: number }[]).map(async i => {
+    res.send((await Promise.all((db.recent() as { data: string, correct: number, guess: number, start: number, end: number, auto: number }[]).map(async i => {
         const data = i.data.split(",").map(x => parseFloat(x));
         const img = new Jimp({ width: 16, height: 16 });
         for(let x = 0; x < 16; x++)
@@ -103,6 +103,7 @@ app.get("/api/history", async (_req, res) => {
             guess: i.guess,
             start: i.start,
             end: i.end,
+            auto: i.auto !== 0
         };
     }))).filter(x => x.guess !== -1));
     // TODO
