@@ -18,8 +18,8 @@
   "author": "Milk_Cool",
   "type": "module",
   "scripts": {
-    "test": "tsx server.ts",
-    "train": "tsx training/train.ts"
+    "start": "tsx server.ts",
+    "train": "tsx training/train.ts --run"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.13",

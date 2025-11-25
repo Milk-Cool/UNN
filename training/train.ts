@@ -8,7 +8,7 @@ import { Jimp, ResizeStrategy } from "jimp";
 const RAND_DIGITS_AMOUNT = 500;
 const BATCH_SIZE = 32; // RAND_DIGITS_AMOUNT will be rounded to this; RAND_DIGITS_AMOUNT should not be less that BATCH_SIZE / 2
 
-const softMax = (logits: number[]) => {
+export const softMax = (logits: number[]) => {
     const max = Math.max(...logits);
     const exps = logits.map(x => Math.exp(x - max));
     const sum = exps.reduce((a, b) => a + b, 0);
@@ -67,30 +67,37 @@ const train = (model: Model, images: number[][], labels: number[], epochs = 5, l
 }
 const images: number[][] = [];
 const labels: number[] = [];
-for(let i = 0; i < 10; i++) {
-    const a = fs.readdirSync(join("training", "dataset", i.toString()));
-    const paths: string[] = [];
-    for(let j = 0; j < Math.round(RAND_DIGITS_AMOUNT / BATCH_SIZE) * BATCH_SIZE; j++) {
-        let p: string;
-        do {
-            p = join("training", "dataset", i.toString(), a[Math.floor(Math.random() * a.length)]);
-        } while(paths.includes(p));
-        
-        let pixels = [];
-        const img = await Jimp.read(p);
-        img.resize({ w: 16, h: 16, mode: ResizeStrategy.BILINEAR });
-        for(let y = 0; y < 16; y++)
-            for(let x = 0; x < 16; x++) {
-                const c = img.getPixelColor(x, y);
-                pixels.push((((c >> 16) & 0xff) + ((c >> 8) & 0xff) + ((c >> 0) & 0xff)) / (0xff * 3));
-            }
-        images.push(pixels);
-        labels.push(i);
-    }
-    console.log("loaded images!", i, 10);
+export const getPixels = (img: any) => { // can't be bothered with the types
+    const pixels = [];
+    for(let y = 0; y < 16; y++)
+        for(let x = 0; x < 16; x++) {
+            const c = img.getPixelColor(x, y);
+            pixels.push((((c >> 16) & 0xff) + ((c >> 8) & 0xff) + ((c >> 0) & 0xff)) / (0xff * 3));
+        }
+    return pixels;
 }
 
-const model = initModel();
-const json = JSON.stringify(train(model, images, labels, 10000));
+if(process.argv.at(-1) === "--run") {
+    for(let i = 0; i < 10; i++) {
+        const a = fs.readdirSync(join("training", "dataset", i.toString()));
+        const paths: string[] = [];
+        for(let j = 0; j < Math.round(RAND_DIGITS_AMOUNT / BATCH_SIZE) * BATCH_SIZE; j++) {
+            let p: string;
+            do {
+                p = join("training", "dataset", i.toString(), a[Math.floor(Math.random() * a.length)]);
+            } while(paths.includes(p));
+            
+            const img = await Jimp.read(p);
+            img.resize({ w: 16, h: 16, mode: ResizeStrategy.BILINEAR });
+            const pixels = getPixels(img);
+            images.push(pixels);
+            labels.push(i);
+        }
+        console.log("loaded images!", i, 10);
+    }
 
-fs.writeFileSync(join("training", "weights", "w.json"), json);
+    const model = initModel();
+    const json = JSON.stringify(train(model, images, labels, 10000));
+
+    fs.writeFileSync(join("training", "weights", "w.json"), json);
+}
