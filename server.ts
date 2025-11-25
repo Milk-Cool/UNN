@@ -120,7 +120,7 @@ app.get("/api/current", (_req, res) => {
 });
 app.post("/api/solve", limiter, express.urlencoded({ extended: true, type: () => true }), async (req, res) => {
     if(calculation === null) return;
-    if(!req.body.res) return res.status(400).send({ error: "Bad request" });
+    if(!req.body.res || Number.isNaN(parseInt(req.body.res))) return res.status(400).send({ error: "Bad request" });
     const expected = b(calculation.op == 0 ? f(calculation.a) * f(calculation.b) : f(calculation.a) + f(calculation.b), calculation.op);
     const actual = b(parseInt(req.body.res), calculation.op);
     if(Math.abs(expected - actual) > 0.0001) return res.status(400).send({ error: "Incorrect value!" });
