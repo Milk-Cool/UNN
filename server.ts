@@ -1,7 +1,7 @@
 import express from "express";
 import fs from "fs";
 import { join } from "path";
-import { Jimp, ResizeStrategy } from "jimp";
+import { Jimp, ResizeStrategy, rgbaToInt } from "jimp";
 import * as db from "./db";
 import { getPixels } from "./training/train";
 import { rateLimit } from "express-rate-limit";
@@ -88,7 +88,23 @@ const limiter = rateLimit({
     limit: 20,
     skip: () => !!process.env.BYPASS_RATE_LIMIT
 });
-app.get("/api/history", (_req, res) => {
+app.get("/api/history", async (_req, res) => {
+    res.send((await Promise.all((db.recent() as { data: string, correct: number, guess: number, start: number, end: number }[]).map(async i => {
+        const data = i.data.split(",").map(x => parseFloat(x));
+        const img = new Jimp({ width: 16, height: 16 });
+        for(let x = 0; x < 16; x++)
+            for(let y = 0; y < 16; y++) {
+                const v = 255 - Math.floor(data[y * 16 + x] * 255);
+                img.setPixelColor(rgbaToInt(v, v, v, 255), x, y);
+            }
+        return {
+            img: await img.getBase64("image/png"),
+            correct: i.correct,
+            guess: i.guess,
+            start: i.start,
+            end: i.end,
+        };
+    }))).filter(x => x.guess !== -1));
     // TODO
 });
 app.get("/api/current", (_req, res) => {

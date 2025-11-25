@@ -4,8 +4,18 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>UNN - You're the neural network!</title>
+        <link href="style.css" rel="stylesheet">
     </head>
     <body>
-        <h2 id="expr"></h2>
+        <div id="main">
+            <h1 class="red">UNN</h1>
+            <h3 class="red">You're the neural network!</h3>
+            <h3><span id="expr"></span> = <input id="res"><button id="submit">OK →</button></h3>
+            <h4>We're <span id="percent"></span>% of the way there! | <a href="https://github.com/Milk-Cool/UNN" target="_blank">GitHub</a></h4>
+        </div>
+        <div id="recent">
+            <h3>Recently recognized: <button id="hide">Hide</button></h3>
+        </div>
+        <script src="script.js"></script>
     </body>
 </html>

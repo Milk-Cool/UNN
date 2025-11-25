@@ -1,0 +1,55 @@
+body {
+    background: linear-gradient(wheat, white);
+    min-height: 100vh;
+    margin: 0;
+}
+
+* {
+    font-family: sans-serif;
+}
+
+#main {
+    position: fixed;
+    top: 20vh;
+    left: 50vw;
+    transform: translateX(-50%);
+    width: 100vw;
+
+    text-align: center;
+}
+#main, #main input, #main button {
+    font-size: x-large;
+}
+
+.red {
+    color: red;
+}
+
+#res, #submit {
+    border: 3px solid red;
+    padding: .5em;
+    margin: .5em;
+    border-radius: .25em;
+    cursor: pointer;
+}
+
+#recent {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    width: 100vw;
+    overflow-x: auto;
+    white-space: nowrap;
+}
+#recent > div {
+    background: white;
+    border: 3px solid red;
+    border-radius: .25em;
+    margin: .5em;
+    padding: .5em;
+    display: inline-block;
+}
+#recent > div > img {
+    width: 100%;
+    image-rendering: pixelated;
+}

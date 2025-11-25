@@ -50,3 +50,7 @@ export const pushCalculation = (a: number, b: number, op: 0 | 1, res: number) =>
 export const solveImage = (guess: number) => {
     db.prepare(`UPDATE images SET guess = ?, end = ? WHERE guess = -1`).run(guess, Math.floor(Date.now() / 1000));
 }
+
+export const recent = () => {
+    return db.prepare(`SELECT * FROM images ORDER BY end DESC LIMIT 10`).all();
+}
