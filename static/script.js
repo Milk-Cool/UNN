@@ -28,6 +28,7 @@
         res = await f.json();
         update();
         document.querySelector("#res").value = "";
+        turnstile.reset(widgetID);
     };
     document.querySelector("#submit").addEventListener("click", submit);
     document.querySelector("#res").addEventListener("keydown", e => {
