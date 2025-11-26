@@ -23,10 +23,10 @@
                 tok
             }).toString()
         });
+        update();
         document.querySelector("#submit").disabled = false;
         if(f.status !== 200) alert(f.status === 429 ? "Nice try, bot" : (await f.json()).error);
         res = await f.json();
-        update();
         document.querySelector("#res").value = "";
         turnstile.reset(widgetID);
     };
